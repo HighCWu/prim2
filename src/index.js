@@ -15,13 +15,18 @@ const sourceImage = Object.assign(new Image(), { src: sourceImageUrl });
 let differenceImage = null;
 let displaySvg;
 let lastResult;
-let palette = [];
-const baseSvgs = [svgs.makeBaseSVG(400, 400)];
+const context = {
+  sourceImage,
+  width: 400,
+  height: 400,
+  palette: [],
+};
+const baseSvgs = [];
 
 function view() {
   return m('div', [
     m('div', [
-      m('img', { width: 400, height: 400, src: sourceImageUrl }),
+      m('img', { width: context.width, height: context.height, src: sourceImageUrl }),
       displaySvg,
       differenceImage,
     ]),
@@ -35,7 +40,7 @@ function view() {
 function runGeneration() {
   const baseSvg = baseSvgs[baseSvgs.length - 1];
   return (
-    vars.makeNextGeneration(sourceImage, baseSvg, palette)
+    vars.makeNextGeneration(context, baseSvg)
       .then((result) => {
         differenceImage = m('img', { src: result.differenceCanvas.toDataURL() });
         lastResult = result;
@@ -55,7 +60,8 @@ function loop() {
 sourceImage.onload = () => {
   pal.extractPalette(sourceImage, 16)
     .then((genPal) => {
-      palette = genPal;
+      context.palette = genPal;
+      baseSvgs.push(svgs.makeBaseSVG(context));
     })
     .then(() => {
       loop();
