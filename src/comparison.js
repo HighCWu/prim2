@@ -20,8 +20,8 @@ function compareImages(image1, image2, width, height) {
       bDiff += data[i + 2];
       nPixels++;
     }
-    // Rec. 709 Luma -- gets us a sort of a perceptual numeric difference value between 0 and 255
-    const score = (0.2126 * rDiff + 0.7152 * gDiff + 0.0722 * bDiff) / (nPixels * 3);
+    // Rec. 709 Luma -- gets us a sort of a perceptual numeric difference value
+    const score = (0.2126 * rDiff + 0.7152 * gDiff + 0.0722 * bDiff) / nPixels;
     resolve({
       score,
       differenceCanvas: canvas,
@@ -33,20 +33,20 @@ function compareImages(image1, image2, width, height) {
 function compareMithrilSVG(sourceImage, mithrilSvg, width = 400, height = 400) {
   return staticRender(mithrilSvg)
     .then((markup) => markup.replace('<svg', '<svg xmlns=\'http://www.w3.org/2000/svg\''))
-    .then((markup) => `data:image/svg+xml;utf8,${encodeURI(markup)}`)
-    .then((url) => new Promise((resolve) => {
+    .then((markup) => ({markup, url: `data:image/svg+xml;utf8,${encodeURI(markup)}`}))
+    .then(({markup, url}) => new Promise((resolve) => {
       const image = Object.assign(new Image(), {
         width,
         height,
         src: url,
-        onload: (() => resolve({image, url})),
+        onload: (() => resolve({image, url, markup})),
         onerror: ((err) => console.error(err)),
       });
     }))
     .then(
-      ({image, url}) => (
+      ({image, url, markup}) => (
         compareImages(sourceImage, image, width, height)
-          .then((compareResult) => Object.assign({}, compareResult, {svgUrl: url}))
+          .then((compareResult) => Object.assign({}, compareResult, {svgUrl: url, svgMarkup: markup}))
       )
     );
 }

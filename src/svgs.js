@@ -6,7 +6,7 @@ const nBlurs = 10;
 const chooseColor = (palette) => palette[Math.floor(Math.random() * palette.length)];
 
 function makeBaseSVG(context) {
-  const {width, height, palette} = context;
+  const { width, height, palette } = context;
   const blurs = [];
   for (let i = 0; i < nBlurs; i++) {
     blurs.push(m('filter', { id: `blur${i}` }, [
@@ -27,40 +27,52 @@ function makeBaseSVG(context) {
 }
 
 function generateRect(context) {
-  const {width, height, palette} = context;
-  const x = Math.random() * width;
-  const y = Math.random() * height;
-  const elWidth = Math.random() * width * 0.5;
-  const elHeight = Math.random() * height * 0.5;
+  const { width, height, palette } = context;
+  const x = Math.floor(Math.random() * width);
+  const y = Math.floor(Math.random() * height);
+  const elWidth = Math.floor(Math.random() * width * 0.3);
+  const elHeight = Math.floor(Math.random() * height * 0.3);
   const fill = chooseColor(palette);
-  const opacity = 0.3 + Math.random() * 0.7;
-  const angle = Math.random() * 360;
+  const opacity = (0.3 + Math.random() * 0.7).toFixed(2);
+  const angle = Math.floor(Math.random() * 8) * 45;
   const blurId = (Math.random() < 0.7 ? `#blur${Math.floor(Math.random() * nBlurs)}` : null);
   const style = (blurId ? `filter: url(${blurId})` : null);
-  return m('rect', {
-    x,
-    y,
-    width: elWidth,
-    height: elHeight,
-    fill,
-    opacity,
-    style,
-    className: 'g',
-    transform: `rotate(${angle})`,
-  });
+  const transform = (angle ? `rotate(${angle})` : '');
+  const commonAttrs = {
+    fill, opacity, style, className: 'g', transform,
+  };
+  if (Math.random() < 0.5) {
+    return m(
+      'rect',
+      Object.assign({
+        x,
+        y,
+        width: elWidth,
+        height: elHeight,
+      }, commonAttrs)
+    );
+  }
+  return m(
+    'ellipse',
+    Object.assign({
+      cx: x,
+      cy: y,
+      width: elWidth,
+      height: elHeight,
+    }, commonAttrs)
+  );
 }
 
 function makeSVGVariant(context, baseSvg) {
-  let newChildren = baseSvg.children;
-  if (Math.random() < 0.75) {
+  let newChildren = Array.from(baseSvg.children);
+  for (let i = 0; i < Math.floor(Math.random() * 5); i++) {
     const newChild = generateRect(context);
-    newChildren = Array.from(baseSvg.children).concat(newChild);
-  } else {
-    newChildren = newChildren.filter((node) => {
-      if (node.attrs.className !== 'g') return true;
-      return Math.random() > 0.98;
-    });
+    newChildren.push(newChild);
   }
+  newChildren = newChildren.filter((node) => {
+    if (node.attrs.className !== 'g') return true;
+    return Math.random() < 0.95;
+  });
   return m(baseSvg.tag, baseSvg.attrs, newChildren);
 }
 

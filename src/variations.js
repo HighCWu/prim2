@@ -6,7 +6,7 @@ const svgs = require('./svgs');
 function generateAndCompareNextVariant(context, baseSvg) {
   const svg = svgs.makeSVGVariant(context, baseSvg);
   return (
-    comp.compareMithrilSVG(context.sourceImage, svg)
+    comp.compareMithrilSVG(context.sourceImage, svg, context.width, context.height)
       .then((result) => Object.assign(result, { svg }))
   );
 }
@@ -17,7 +17,7 @@ function makeNextGeneration(context, baseSvg, count = 5) {
     ps.push(generateAndCompareNextVariant(context, baseSvg));
   }
   return Promise.all(ps).then((results) => {
-    const bestResult = sortBy(results, (r) => Math.sqrt(r.score))[0];
+    const bestResult = sortBy(results, (r) => r.score)[0];
     return bestResult;
   });
 }

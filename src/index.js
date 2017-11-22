@@ -17,8 +17,8 @@ let displaySvg;
 let lastResult;
 const context = {
   sourceImage,
-  width: 400,
-  height: 400,
+  width: 200,
+  height: 200,
   palette: [],
 };
 const baseSvgs = [];
@@ -32,7 +32,7 @@ function view() {
     ]),
     m('div', [
       (lastResult ? m('div', ['score=', lastResult.score]) : null),
-      (lastResult ? m('div', ['length=', lastResult.svgUrl.length]) : null),
+      (lastResult ? m('div', ['length=', lastResult.svgMarkup.length]) : null),
     ]),
   ]);
 }
@@ -58,7 +58,7 @@ function loop() {
 }
 
 sourceImage.onload = () => {
-  pal.extractPalette(sourceImage, 16)
+  pal.extractPalette(sourceImage, 64)
     .then((genPal) => {
       context.palette = genPal;
       baseSvgs.push(svgs.makeBaseSVG(context));
