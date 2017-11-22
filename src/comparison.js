@@ -39,11 +39,16 @@ function compareMithrilSVG(sourceImage, mithrilSvg, width = 400, height = 400) {
         width,
         height,
         src: url,
-        onload: (() => resolve(image)),
+        onload: (() => resolve({image, url})),
         onerror: ((err) => console.error(err)),
       });
     }))
-    .then((image) => compareImages(sourceImage, image, width, height));
+    .then(
+      ({image, url}) => (
+        compareImages(sourceImage, image, width, height)
+          .then((compareResult) => Object.assign({}, compareResult, {svgUrl: url}))
+      )
+    );
 }
 
 module.exports = {

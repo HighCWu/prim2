@@ -10,8 +10,7 @@ function makeBaseSVG(width, height) {
       m('feGaussianBlur', { in: 'SourceGraphic', stdDeviation: ((i + 1) / nBlurs) * 0.25 * width }),
     ]));
   }
-  return m('svg', { width, height }, [
-    blurs,
+  const children = [].concat(blurs).concat([
     m('rect', {
       x: 0,
       y: 0,
@@ -20,19 +19,20 @@ function makeBaseSVG(width, height) {
       fill: 'black',
     }),
   ]);
+  return m('svg', { width, height }, children);
 }
 
-function makeSVGVariant(base, width, height) {
+function generateRect(width, height, palette) {
   const x = Math.random() * width;
   const y = Math.random() * height;
   const elWidth = Math.random() * width * 0.5;
   const elHeight = Math.random() * height * 0.5;
-  const fill = colors[Math.floor(Math.random() * colors.length)];
+  const fill = palette[Math.floor(Math.random() * palette.length)];
   const opacity = 0.3 + Math.random() * 0.7;
   const angle = Math.random() * 360;
   const blurId = (Math.random() < 0.7 ? `#blur${Math.floor(Math.random() * nBlurs)}` : null);
   const style = (blurId ? `filter: url(${blurId})` : null);
-  const newChild = m('rect', {
+  return m('rect', {
     x,
     y,
     width: elWidth,
@@ -40,9 +40,22 @@ function makeSVGVariant(base, width, height) {
     fill,
     opacity,
     style,
+    className: 'g',
     transform: `rotate(${angle})`,
   });
-  const newChildren = Array.from(base.children).concat(newChild);
+}
+
+function makeSVGVariant(base, width, height, palette = colors) {
+  let newChildren = base.children;
+  if (Math.random() < 0.75) {
+    const newChild = generateRect(width, height, palette);
+    newChildren = Array.from(base.children).concat(newChild);
+  } else {
+    newChildren = newChildren.filter((node) => {
+      if (node.attrs.className !== 'g') return true;
+      return Math.random() > 0.98;
+    });
+  }
   return m(base.tag, base.attrs, newChildren);
 }
 
